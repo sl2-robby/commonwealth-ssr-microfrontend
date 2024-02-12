@@ -1,0 +1,163 @@
+{
+  "name": "generator",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "commonwealth",
+  "sourceRoot": "generator/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:webpack-browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/generator/browser",
+        "index": "generator/src/index.html",
+        "main": "generator/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "generator/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": ["generator/src/favicon.ico", "generator/src/assets"],
+        "styles": ["generator/src/styles.scss"],
+        "scripts": [],
+        "customWebpackConfig": {
+          "path": "generator/webpack.config.ts"
+        }
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "outputHashing": "all",
+          "customWebpackConfig": {
+            "path": "generator/webpack.prod.config.ts"
+          }
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@nx/angular:dev-server",
+      "options": {
+        "port": 4202,
+        "publicHost": "http://localhost:4202"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "generator:build:production"
+        },
+        "development": {
+          "buildTarget": "generator:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "generator:build"
+      }
+    },
+    "server": {
+      "dependsOn": ["build"],
+      "executor": "@nx/angular:webpack-server",
+      "options": {
+        "outputPath": "dist/generator/server",
+        "main": "generator/server.ts",
+        "tsConfig": "generator/tsconfig.server.json",
+        "inlineStyleLanguage": "scss",
+        "customWebpackConfig": {
+          "path": "generator/webpack.server.config.ts"
+        }
+      },
+      "configurations": {
+        "production": {
+          "outputHashing": "media"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "sourceMap": true,
+          "extractLicenses": false,
+          "vendorChunk": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve-ssr": {
+      "executor": "@angular-devkit/build-angular:ssr-dev-server",
+      "configurations": {
+        "development": {
+          "browserTarget": "generator:build:development",
+          "serverTarget": "generator:server:development"
+        },
+        "production": {
+          "browserTarget": "generator:build:production",
+          "serverTarget": "generator:server:production"
+        }
+      },
+      "defaultConfiguration": "development",
+      "options": {
+        "port": 4202
+      }
+    },
+    "prerender": {
+      "executor": "@angular-devkit/build-angular:prerender",
+      "options": {
+        "routes": ["/"]
+      },
+      "configurations": {
+        "development": {
+          "browserTarget": "generator:build:development",
+          "serverTarget": "generator:server:development"
+        },
+        "production": {
+          "browserTarget": "generator:build:production",
+          "serverTarget": "generator:server:production"
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve-static": {
+      "executor": "@nx/web:file-server",
+      "defaultConfiguration": "production",
+      "options": {
+        "buildTarget": "generator:build",
+        "port": 4202,
+        "watch": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "generator:build:development"
+        },
+        "production": {
+          "buildTarget": "generator:build:production"
+        }
+      }
+    },
+    "static-server": {
+      "dependsOn": ["build", "server"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "PORT=4202 node dist/generator/server/main.js"
+      }
+    }
+  }
+}

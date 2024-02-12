@@ -1,0 +1,136 @@
+{
+  "name": "main",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "commonwealth",
+  "sourceRoot": "main/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:webpack-browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/main/browser",
+        "index": "main/src/index.html",
+        "main": "main/src/main.ts",
+        "polyfills": ["zone.js"],
+        "tsConfig": "main/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": ["main/src/favicon.ico", "main/src/assets"],
+        "styles": ["main/src/styles.scss"],
+        "scripts": [],
+        "customWebpackConfig": {
+          "path": "main/webpack.config.ts"
+        }
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "outputHashing": "all",
+          "customWebpackConfig": {
+            "path": "main/webpack.prod.config.ts"
+          }
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@nx/angular:module-federation-dev-server",
+      "options": {
+        "port": 4200,
+        "publicHost": "http://localhost:4200"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "main:build:production"
+        },
+        "development": {
+          "buildTarget": "main:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "main:build"
+      }
+    },
+    "server": {
+      "dependsOn": ["build"],
+      "executor": "@nx/angular:webpack-server",
+      "options": {
+        "outputPath": "dist/main/server",
+        "main": "main/server.ts",
+        "tsConfig": "main/tsconfig.server.json",
+        "inlineStyleLanguage": "scss",
+        "customWebpackConfig": {
+          "path": "main/webpack.server.config.ts"
+        }
+      },
+      "configurations": {
+        "production": {
+          "outputHashing": "media"
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "sourceMap": true,
+          "extractLicenses": false,
+          "vendorChunk": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve-ssr": {
+      "executor": "@nx/angular:module-federation-dev-ssr",
+      "configurations": {
+        "development": {
+          "browserTarget": "main:build:development",
+          "serverTarget": "main:server:development"
+        },
+        "production": {
+          "browserTarget": "main:build:production",
+          "serverTarget": "main:server:production"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "prerender": {
+      "executor": "@angular-devkit/build-angular:prerender",
+      "options": {
+        "routes": ["/"]
+      },
+      "configurations": {
+        "development": {
+          "browserTarget": "main:build:development",
+          "serverTarget": "main:server:development"
+        },
+        "production": {
+          "browserTarget": "main:build:production",
+          "serverTarget": "main:server:production"
+        }
+      },
+      "defaultConfiguration": "production"
+    }
+  }
+}
